@@ -68,12 +68,22 @@
         gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
         shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
         shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+        shaderProgram.WidthUniform = gl.getUniformLocation(shaderProgram, "Width");
+        shaderProgram.HeightUniform = gl.getUniformLocation(shaderProgram, "Height");
+        shaderProgram.CamPosUnifrom = gl.getUniformLocation(shaderProgram, "CamPos");
+        shaderProgram.CamViewUnifrom = gl.getUniformLocation(shaderProgram, "CamView");
+        shaderProgram.CamAngleUnifrom = gl.getUniformLocation(shaderProgram, "CamAngle");
       }
       var mvMatrix = mat4.create();
       var pMatrix = mat4.create();
       function setMatrixUniforms() {
         gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
         gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
+        gl.uniform1i(shaderProgram.WidthUniform, gl.viewportWidth);
+        gl.uniform1i(shaderProgram.HeightUniform, gl.viewportHeight);
+        gl.uniform3f(shaderProgram.CamPosUnifrom, 0, 0, 10);
+        gl.uniform3f(shaderProgram.CamViewUnifrom, 0, 0, -1);
+        gl.uniform1f(shaderProgram.CamAngleUnifrom, 45);
       }
       var squareVertexPositionBuffer;
       function initBuffers() {
