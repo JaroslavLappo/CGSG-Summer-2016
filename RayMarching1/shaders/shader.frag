@@ -17,6 +17,26 @@ vec3 R( vec3 V, float T )
   return CamPos + V * T;
 }
 
+vec4 GetIntersection( vec3 V )
+{
+  float T = 0.0;
+  float d = 0.0;
+
+  for (int i = 0; i < 100; i++)
+  {
+    if ((d < 0.0 || d > 100.0) && i != 0)
+      break;
+
+    d = SDF(R(V, T));
+    T += d;
+  }
+
+  if (SDF(R(V, T)) < 0.02)
+    return vec4(R(V, T), 1.0);
+  else
+    return vec4(0.0, 0.0, 0.0, 0.0);
+}
+
 void main(void)
 {
   vec3 CamViewProjDist;
@@ -40,19 +60,9 @@ void main(void)
 
   V = normalize(CamViewProjDist + XOff * Right + YOff * Up);
 
-  float T = 0.0;
-  float d = 0.0;
+  vec4 Inter = GetIntersection(V);
 
-  for (int i = 0; i < 100; i++)
-  {
-    if ((d < 0.0 || d > 100.0) && i != 0)
-      break;
-
-    d = SDF(R(V, T));
-    T += d;
-  }
-
-  if (SDF(R(V, T)) < 0.02)
+  if (Inter.w > 0.5)
     gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
   else
     gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
