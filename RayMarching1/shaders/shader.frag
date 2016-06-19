@@ -151,8 +151,11 @@ vec3 opTwist( vec3 p )
 
 vec2 map( in vec3 pos )
 {
-    vec2 res = /*opU( vec2( sdPlane(     pos), 1.0 ),*/
-	                vec2( sdSphere(    pos-vec3( 0.0,0.25, 0.0), 0.25 ), 46.9 ) /*)*/;
+///    vec2 res = /*opU( vec2( sdPlane(     pos), 1.0 ),*/
+///	                vec2( sdSphere(    pos-vec3( 0.0,0.25, 0.0), 0.25 ), 46.9 ) /*)*/;
+    vec2 res = opU( vec2( sdPlane(     pos), 1.0 ),
+	                vec2( sdSphere(    pos-vec3( 0.0,0.25, 0.0), 0.25 ), 46.9 ) );
+
     res = opU( res, vec2( sdBox(       pos-vec3( 1.0,0.25, 0.0), vec3(0.25) ), 3.0 ) );
     res = opU( res, vec2( udRoundBox(  pos-vec3( 1.0,0.25, 1.0), vec3(0.15), 0.1 ), 41.0 ) );
 	res = opU( res, vec2( sdTorus(     pos-vec3( 0.0,0.25, 1.0), vec2(0.20,0.05) ), 25.0 ) );
@@ -182,6 +185,13 @@ vec2 map( in vec3 pos )
     res = opU( res, vec2(sdConeSection( pos-vec3( 0.0,0.35,-2.0), 0.15, 0.2, 0.1 ), 13.67 ) );
 
     res = opU( res, vec2(sdEllipsoid( pos-vec3( 1.0,0.35,-2.0), vec3(0.15, 0.2, 0.05) ), 43.17 ) );
+
+    res = vec2(opS(
+		             sdTorus82(  pos-vec3(0.0,0.2, 0.0), vec2(0.20,0.1)),
+	                 sdCylinder(  opRep( vec3(atan(pos.x+0.0,pos.z)/6.2831,
+											  pos.y,
+											  0.02+0.5*length(pos-vec3(0.0,0.2, 0.0))),
+									     vec3(0.05,1.0,0.05)), vec2(0.02,0.6))), 51.0 );
 
     return res;
 }
@@ -236,11 +246,11 @@ vec3 R( vec3 V, float T )
   return CamPos + V * T;
 }
 
-vec4 GetIntersection( vec3 V )
+vec2 GetIntersection( vec3 V )
 {
   const float tMin = 0.0;
   const float tMax = 1000.0;
-  const float dMin = 0.00002;
+  const float dMin = 0.0002;
 
   const int iterMax = 1000;
 
@@ -258,9 +268,9 @@ vec4 GetIntersection( vec3 V )
   }
 
   if (SDF(R(V, T)) < dMin)
-    return vec4(R(V, T), 1.0);
+    return vec2(T, 1.0);
   else
-    return vec4(0.0, 0.0, 0.0, 0.0);
+    return vec2(0.0, 0.0);
 }
 
 void main(void)
@@ -286,10 +296,10 @@ void main(void)
 
   V = normalize(CamViewProjDist + XOff * Right + YOff * Up);
 
-  vec4 Inter = GetIntersection(V);
+  vec2 Inter = GetIntersection(V);
 
-  if (Inter.w > 0.5)
-    gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+  if (Inter.y > 0.5)
+    gl_FragColor = vec4((1.0 - Inter.x / 2.0) * vec3(1.0, 1.0, 1.0), 1.0);
   else
     gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
 }
