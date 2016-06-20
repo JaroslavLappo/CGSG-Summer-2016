@@ -73,8 +73,8 @@ function SetMatrixUniforms() {
   gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
   gl.uniform1i(shaderProgram.WidthUniform, gl.viewportWidth);
   gl.uniform1i(shaderProgram.HeightUniform, gl.viewportHeight);
-  gl.uniform3f(shaderProgram.CamPosUnifrom, -1, 3, 1.5);
-  gl.uniform3f(shaderProgram.CamViewUnifrom, 0, -1, -1);
+  gl.uniform3f(shaderProgram.CamPosUnifrom, 0, 1, 1.0);
+  gl.uniform3f(shaderProgram.CamViewUnifrom, 0, -0.6, -1);
   gl.uniform1f(shaderProgram.ProjDistUnifrom, 1);
 }
 var squareVertexPositionBuffer;
@@ -156,11 +156,12 @@ function Update() {
 
 function WebGLStart() {
   var canvas = document.getElementById("rm-canvas");
-  InitPointerLock(canvas);
+  //InitPointerLock(canvas);
   InitGL(canvas);
   InitShaders();
   InitBuffers();
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
-  setTimeout(Update, 33);
+  //setTimeout(Update, 33);
+  Update();
 }
