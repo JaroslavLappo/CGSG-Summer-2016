@@ -6,7 +6,7 @@ function InitGL(canvas) {
         if (!gl) {
             gl = canvas.getContext("webgl");
             if (!gl) {
-                gl = canvas.getContext("experemental-webgl");
+                gl = canvas.getContext("experimental-webgl");
                 if (!gl) {
                     alert('Your browser doesn`t support WebGL.');
                 }
