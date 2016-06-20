@@ -151,9 +151,10 @@ vec3 opTwist( vec3 p )
 
 vec2 map( in vec3 pos )
 {
+  vec2 res;
 ///    vec2 res = /*opU( vec2( sdPlane(     pos), 1.0 ),*/
 ///	                vec2( sdSphere(    pos-vec3( 0.0,0.25, 0.0), 0.25 ), 46.9 ) /*)*/;
-    vec2 res = opU( vec2( sdPlane(     pos), 1.0 ),
+/*    vec2 res = opU( vec2( sdPlane(     pos), 1.0 ),
 	                vec2( sdSphere(    pos-vec3( 0.0,0.25, 0.0), 0.25 ), 46.9 ) );
 
     res = opU( res, vec2( sdBox(       pos-vec3( 1.0,0.25, 0.0), vec3(0.25) ), 3.0 ) );
@@ -185,7 +186,7 @@ vec2 map( in vec3 pos )
     res = opU( res, vec2(sdConeSection( pos-vec3( 0.0,0.35,-2.0), 0.15, 0.2, 0.1 ), 13.67 ) );
 
     res = opU( res, vec2(sdEllipsoid( pos-vec3( 1.0,0.35,-2.0), vec3(0.15, 0.2, 0.05) ), 43.17 ) );
-
+  */
     res = vec2(opS(
 		             sdTorus82(  pos-vec3(0.0,0.2, 0.0), vec2(0.20,0.1)),
 	                 sdCylinder(  opRep( vec3(atan(pos.x+0.0,pos.z)/6.2831,
@@ -249,10 +250,10 @@ vec3 R( vec3 V, float T )
 vec2 GetIntersection( vec3 V )
 {
   const float tMin = 0.0;
-  const float tMax = 30.0;
+  const float tMax = 1000.0;
   const float dMin = 0.000001;
 
-  const int iterMax = 100;
+  const int iterMax = 1000;
 
   float T = tMin;
 
@@ -284,25 +285,32 @@ vec3 Normal( vec3 Point )
 
 vec3 Shade( vec3 Point, vec3 View, vec3 Normal )
 {
-  vec3 LightDirs = vec3(1, -4, 0.2);
+  vec3 LightDir = vec3(1, -4, 0.2);
   vec3 LightColor = vec3(1.0, 0.5, 0.5);
-  vec3 Ka = vec3(0.2);
+  vec3 Ka = vec3(0.4);
   vec3 Ke = vec3(0.0);
   vec3 Kd = vec3(0.3, 1.0, 0.8);
-  vec3 Ks = vec3(0.4);
+  vec3 Ks = vec3(0.1);
   float Kp = 0.1;
   vec3 Color = vec3(0.0, 0.0, 0.0);
 
   Color += Ka;
 
-  Color += Kd * dot(Normal, normalize(-LightDirs));
+  Color += Kd * dot(Normal, normalize(-LightDir));
 
   vec3 Reflect;
 
-  Reflect =
+  Reflect = normalize(2.0 * Normal + LightDir);
+
+  float ReflectRes = dot(View, Reflect);
+
+  if (ReflectRes > 0.0)
+    Color += Ks * pow(ReflectRes, Kp);
+
+  return Color;
 }
 
-void main(void)
+void main( void )
 {
   vec3 CamViewProjDist;
   float XOff, YOff;
@@ -329,9 +337,13 @@ void main(void)
   vec2 Inter = GetIntersection(V);
 
   if (Inter.y > 0.5)
+  {
+    vec3 point = R(V, Inter.x);
+    vec3 normal = Normal(point);
 ///*Depth*/    gl_FragColor = vec4((1.0 - Inter.x / 2.0) * vec3(1.0, 1.0, 1.0), 1.0);
-/*Normal*/    gl_FragColor = vec4(((Normal(R(V, Inter.x)) + vec3(1.0)) / 2.0), 1.0);
-
+///*Normal*/    gl_FragColor = vec4(normal, 1.0);
+/*Lighting*/    gl_FragColor = vec4(Shade(point, V, normal), 1.0);
+  }
   else
     gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
 }
