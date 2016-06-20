@@ -278,6 +278,7 @@ void main(void)
 
   vec3 Up = vec3(0, 1, 0);
   vec3 Right = normalize(cross(CamView, Up));
+  Up = normalize(cross(Right, CamView));
 
   XOff = gl_FragCoord.x / XScale * 2.0 - 1.0;
   YOff = gl_FragCoord.y / YScale * 2.0 - 1.0;
