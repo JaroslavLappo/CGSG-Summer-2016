@@ -58,24 +58,42 @@ function InitShaders() {
   gl.useProgram(shaderProgram);
   shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
   gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
-  shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
-  shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+  shaderProgram.vMatrixUniform = gl.getUniformLocation(shaderProgram, "vMatrix");
   shaderProgram.WidthUniform = gl.getUniformLocation(shaderProgram, "Width");
   shaderProgram.HeightUniform = gl.getUniformLocation(shaderProgram, "Height");
   shaderProgram.CamPosUnifrom = gl.getUniformLocation(shaderProgram, "CamPos");
   shaderProgram.CamViewUnifrom = gl.getUniformLocation(shaderProgram, "CamView");
   shaderProgram.ProjDistUnifrom = gl.getUniformLocation(shaderProgram, "ProjDist");
+  shaderProgram.TimeUnifrom = gl.getUniformLocation(shaderProgram, "Time");
 }
-var mvMatrix = mat4.create();
-var pMatrix = mat4.create();
+var vMatrix = mat4.create();
 function SetMatrixUniforms() {
-  gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
-  gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
+  var time = 0 * Date.now() / 1000.0;
+
+  gl.uniformMatrix4fv(shaderProgram.vMatrixUniform, false, vMatrix);
   gl.uniform1i(shaderProgram.WidthUniform, gl.viewportWidth);
   gl.uniform1i(shaderProgram.HeightUniform, gl.viewportHeight);
-  gl.uniform3f(shaderProgram.CamPosUnifrom, 0, 1, 1.0);
-  gl.uniform3f(shaderProgram.CamViewUnifrom, 0, -0.6, -1);
+
+  var Pos = new vec3.create();
+  var TimeVec = new vec3.create();
+  var LookAt = new vec3.create();
+
+  LookAt.x = 0;
+  LookAt.y = 0.2;
+  LookAt.z = 0;
+
+  TimeVec.x = Math.cos(time);
+  TimeVec.y = Math.sin(time);
+
+  Pos.x = TimeVec.x * 0.4;
+  Pos.y = 1         * 0.6;
+  Pos.z = TimeVec.y * 0.4;
+
+
+  gl.uniform3f(shaderProgram.CamPosUnifrom, Pos.x, Pos.y, Pos.z);
+  gl.uniform3f(shaderProgram.CamViewUnifrom, LookAt.x - Pos.x, LookAt.y - Pos.y, LookAt.z - Pos.z);
   gl.uniform1f(shaderProgram.ProjDistUnifrom, 1);
+  gl.uniform1f(shaderProgram.TimeUnifrom, time);
 }
 var squareVertexPositionBuffer;
 function InitBuffers() {
@@ -97,8 +115,7 @@ function DrawScene() {
 //        mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
 //        mat4.ortho(pMatrix, -10, 10, -10, 10, -1, 1);
 //        mat4.ortho = function (out, left, right, bottom, top, near, far)
-  mat4.identity(pMatrix);
-  mat4.identity(mvMatrix);
+  mat4.identity(vMatrix);
 //        mat4.translate(mvMatrix, [0.0, 0.0, -7.0]);
   gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexPositionBuffer);
   gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, squareVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
@@ -149,19 +166,18 @@ function CameraRotate() {
 
 }
 
-function Update() {
-  alert("Hi!");
-  DrawScene();
-}
-
 function WebGLStart() {
   var canvas = document.getElementById("rm-canvas");
-  //InitPointerLock(canvas);
+  InitPointerLock(canvas);
   InitGL(canvas);
   InitShaders();
   InitBuffers();
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
-  //setTimeout(Update, 33);
+  function Update() {
+    requestAnimationFrame(Update);
+    DrawScene();
+  }
+
   Update();
 }

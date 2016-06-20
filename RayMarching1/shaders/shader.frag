@@ -249,10 +249,10 @@ vec3 R( vec3 V, float T )
 vec2 GetIntersection( vec3 V )
 {
   const float tMin = 0.0;
-  const float tMax = 1000.0;
-  const float dMin = 0.0002;
+  const float tMax = 30.0;
+  const float dMin = 0.000001;
 
-  const int iterMax = 1000;
+  const int iterMax = 100;
 
   float T = tMin;
 
@@ -273,13 +273,42 @@ vec2 GetIntersection( vec3 V )
     return vec2(0.0, 0.0);
 }
 
+vec3 Normal( vec3 Point )
+{
+  float E = 0.00001;
+
+  return normalize(vec3(SDF(Point + vec3(E, 0, 0)) - SDF(Point - vec3(E, 0, 0)),
+                        SDF(Point + vec3(0, 0, E)) - SDF(Point - vec3(0, E, 0)),
+                        SDF(Point + vec3(0, 0, E)) - SDF(Point - vec3(0, 0, E))));
+}
+
+vec3 Shade( vec3 Point, vec3 View, vec3 Normal )
+{
+  vec3 LightDirs = vec3(1, -4, 0.2);
+  vec3 LightColor = vec3(1.0, 0.5, 0.5);
+  vec3 Ka = vec3(0.2);
+  vec3 Ke = vec3(0.0);
+  vec3 Kd = vec3(0.3, 1.0, 0.8);
+  vec3 Ks = vec3(0.4);
+  float Kp = 0.1;
+  vec3 Color = vec3(0.0, 0.0, 0.0);
+
+  Color += Ka;
+
+  Color += Kd * dot(Normal, normalize(-LightDirs));
+
+  vec3 Reflect;
+
+  Reflect =
+}
+
 void main(void)
 {
   vec3 CamViewProjDist;
   float XOff, YOff;
   vec3 V;
-  float XScale = float(Width);
-  float YScale = float(Height);
+  float XScale = 1.0 * float(Width);
+  float YScale = 1.0 * float(Height);
 
   if (Width > Height)
     YScale *= float(Width) / float(Height);
@@ -300,7 +329,9 @@ void main(void)
   vec2 Inter = GetIntersection(V);
 
   if (Inter.y > 0.5)
-    gl_FragColor = vec4((1.0 - Inter.x / 2.0) * vec3(1.0, 1.0, 1.0), 1.0);
+///*Depth*/    gl_FragColor = vec4((1.0 - Inter.x / 2.0) * vec3(1.0, 1.0, 1.0), 1.0);
+/*Normal*/    gl_FragColor = vec4(((Normal(R(V, Inter.x)) + vec3(1.0)) / 2.0), 1.0);
+
   else
     gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
 }
