@@ -284,7 +284,7 @@ vec3 Normal( vec3 Point )
 
 vec3 Shade( vec3 Point, vec3 View, vec3 Normal )
 {
-  vec3 LightDirs = vec3(1, -4, 0.2);
+  vec3 LightDir = vec3(1, -4, 0.2);
   vec3 LightColor = vec3(1.0, 0.5, 0.5);
   vec3 Ka = vec3(0.2);
   vec3 Ke = vec3(0.0);
@@ -295,11 +295,18 @@ vec3 Shade( vec3 Point, vec3 View, vec3 Normal )
 
   Color += Ka;
 
-  Color += Kd * dot(Normal, normalize(-LightDirs));
+  Color += Kd * dot(Normal, normalize(-LightDir));
 
   vec3 Reflect;
 
-  Reflect =
+  Reflect = normalize(2.0 * Normal + LightDir);
+
+  float ReflectRes = dot(View, Reflect);
+
+  if (ReflectRes > 0.0)
+    Color += Ks * pow(ReflectRes, Kp);
+
+  return Color;
 }
 
 void main(void)
@@ -329,9 +336,13 @@ void main(void)
   vec2 Inter = GetIntersection(V);
 
   if (Inter.y > 0.5)
+  {
+    vec3 point = R(V, Inter.x);
+    vec3 normal = Normal(point);
 ///*Depth*/    gl_FragColor = vec4((1.0 - Inter.x / 2.0) * vec3(1.0, 1.0, 1.0), 1.0);
-/*Normal*/    gl_FragColor = vec4(((Normal(R(V, Inter.x)) + vec3(1.0)) / 2.0), 1.0);
-
+///*Normal*/    gl_FragColor = vec4(normal, 1.0);
+/*Lighting*/    gl_FragColor = vec4(Shade(point, V, normal), 1.0);
+  }
   else
     gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
 }

@@ -68,7 +68,7 @@ function InitShaders() {
 }
 var vMatrix = mat4.create();
 function SetMatrixUniforms() {
-  var time = 0 * Date.now() / 1000.0;
+  var time = Date.now() / 1000.0;
 
   gl.uniformMatrix4fv(shaderProgram.vMatrixUniform, false, vMatrix);
   gl.uniform1i(shaderProgram.WidthUniform, gl.viewportWidth);
