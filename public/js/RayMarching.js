@@ -1,3 +1,5 @@
+
+(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();stats.showPanel(1);document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';document.head.appendChild(script);})()
 var gl;
 function InitGL(canvas) {
   try {
@@ -71,7 +73,7 @@ function InitShaders() {
 }
 var vMatrix = mat4.create();
 function SetMatrixUniforms() {
-  var time = 0.3 * Date.now() / 1000.0;
+  var time = Date.now() / 1000.0;
 
   gl.uniformMatrix4fv(shaderProgram.vMatrixUniform, false, vMatrix);
   gl.uniform1i(shaderProgram.WidthUniform, gl.viewportWidth);
@@ -87,16 +89,16 @@ function SetMatrixUniforms() {
 
   TimeVec.x = Math.cos(time);
   TimeVec.y = Math.sin(time);
+  TimeVec.z = Math.sin(time / 2);
 
   Pos.x = TimeVec.x * 0.4;
-  Pos.y = 1         * 0.6;
+  Pos.y = TimeVec.z * 0.6;
   Pos.z = TimeVec.y * 0.4;
 
   CamPos = Pos;
   CamDir.x = LookAt.x - Pos.x;
   CamDir.y = LookAt.y - Pos.y;
   CamDir.z = LookAt.z - Pos.z;
-
 
   gl.uniform3f(shaderProgram.CamPosUnifrom, CamPos.x, CamPos.y, CamPos.z);
   gl.uniform3f(shaderProgram.CamViewUnifrom, CamDir.x, CamDir.y, CamDir.z);
@@ -120,11 +122,7 @@ function InitBuffers() {
 function DrawScene() {
   gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
   gl.clear(gl.COLOR_BUFFER_BIT);
-//        mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
-//        mat4.ortho(pMatrix, -10, 10, -10, 10, -1, 1);
-//        mat4.ortho = function (out, left, right, bottom, top, near, far)
   mat4.identity(vMatrix);
-//        mat4.translate(mvMatrix, [0.0, 0.0, -7.0]);
   gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexPositionBuffer);
   gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, squareVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
   SetMatrixUniforms();

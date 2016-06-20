@@ -310,7 +310,7 @@ vec3 Shade( vec3 Point, vec3 View, vec3 Normal )
   return Color;
 }
 
-void main(void)
+void main( void )
 {
   vec3 CamViewProjDist;
   float XOff, YOff;
