@@ -45,6 +45,9 @@ function GetShader(gl, FileName) {
   return shader;
 }
 var shaderProgram;
+var CamPos = vec3.create();
+var CamDir = vec3.create();
+
 function InitShaders() {
   var fragmentShader = GetShader(gl, "shaders/shader.frag");
   var vertexShader = GetShader(gl, "shaders/shader.vert");
@@ -68,15 +71,15 @@ function InitShaders() {
 }
 var vMatrix = mat4.create();
 function SetMatrixUniforms() {
-  var time = Date.now() / 1000.0;
+  var time = 0.3 * Date.now() / 1000.0;
 
   gl.uniformMatrix4fv(shaderProgram.vMatrixUniform, false, vMatrix);
   gl.uniform1i(shaderProgram.WidthUniform, gl.viewportWidth);
   gl.uniform1i(shaderProgram.HeightUniform, gl.viewportHeight);
 
-  var Pos = new vec3.create();
-  var TimeVec = new vec3.create();
-  var LookAt = new vec3.create();
+  var TimeVec = vec3.create();
+  var Pos = vec3.create();
+  var LookAt = vec3.create();
 
   LookAt.x = 0;
   LookAt.y = 0.2;
@@ -89,9 +92,14 @@ function SetMatrixUniforms() {
   Pos.y = 1         * 0.6;
   Pos.z = TimeVec.y * 0.4;
 
+  CamPos = Pos;
+  CamDir.x = LookAt.x - Pos.x;
+  CamDir.y = LookAt.y - Pos.y;
+  CamDir.z = LookAt.z - Pos.z;
 
-  gl.uniform3f(shaderProgram.CamPosUnifrom, Pos.x, Pos.y, Pos.z);
-  gl.uniform3f(shaderProgram.CamViewUnifrom, LookAt.x - Pos.x, LookAt.y - Pos.y, LookAt.z - Pos.z);
+
+  gl.uniform3f(shaderProgram.CamPosUnifrom, CamPos.x, CamPos.y, CamPos.z);
+  gl.uniform3f(shaderProgram.CamViewUnifrom, CamDir.x, CamDir.y, CamDir.z);
   gl.uniform1f(shaderProgram.ProjDistUnifrom, 1);
   gl.uniform1f(shaderProgram.TimeUnifrom, time);
 }
