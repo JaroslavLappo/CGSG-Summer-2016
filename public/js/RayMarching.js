@@ -1,6 +1,73 @@
-javascript:(function(){var script=document.createElement('script');script.onload=function(){var stats=new Stats();document.body.appendChild(stats.dom);requestAnimationFrame(function loop(){stats.update();requestAnimationFrame(loop)});};script.src='//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';document.head.appendChild(script);})()
+javascript:(function () {
+    var script = document.createElement('script');
+    script.onload = function () {
+        var stats = new Stats();
+        document.body.appendChild(stats.dom);
+        requestAnimationFrame(function loop() {
+            stats.update();
+            requestAnimationFrame(loop)
+        });
+    };
+    script.src = '//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';
+    document.head.appendChild(script);
+})()
 
 var gl;
+
+var Camera;
+var zero_vec = vec3.create();
+vec3.set(zero_vec, 0, 0, 0);
+var up_vec = vec3.create();
+vec3.set(up_vec, 0, 1, 0);
+
+function CameraInit() {
+    Camera.Pos = vec3.create();
+    Camera.Dir = vec3.create();
+    Camera.Up = vec3.create();
+    Camera.Right = vec3.create();
+
+    vec3.set(Camera.Pos, 0, 0, 0);
+    vec3.set(Camera.Up, 0, 1, 0);
+    vec3.set(Camera.Dir, 0, 0, -1);
+    vec3.set(Camera.Right, 1, 0, 0);
+}
+
+function CameraRotateX(angle) {
+    mrot = mat4.create();
+    mat4.identity(mrot);
+    mat4.rotate(mrot, mrot, angle, Camera.Right);
+    vec3.transformMat4(Camera.Up, Camera.Up, mrot);
+    vec3.transformMat4(Camera.Dir, Camera.Dir, mrot);
+}
+
+function CameraRotateY(angle) {
+    mrot = mat4.create();
+    mat4.identity(mrot);
+    mat4.rotate(mrot, mrot, angle, up_vec);
+    vec3.transformMat4(Camera.Up, Camera.Up, mrot);
+    vec3.transformMat4(Camera.Dir, Camera.Dir, mrot);
+    vec3.transformMat4(Camera.Right, Camera.Right, mrot);
+}
+
+function CameraTranslate(x, y, z) {
+    var tr_vec = vec3.create();
+    var x_vec = vec3.create();
+    var y_vec = vec3.create();
+    var z_vec = vec3.create();
+
+    vec3.set(tr_vec, 0, 0, 0);
+
+    vec3.add(tr_vec, tr_vec,
+        vec3.scale(x_vec, Camera.Right, x));
+
+    vec3.add(tr_vec, tr_vec,
+        vec3.scale(y_vec, up_vec, y));
+
+    vec3.add(tr_vec, tr_vec,
+        vec3.scale(z_vec, Camera.Dir, -z));
+
+    vec3.add(Camera.Pos, Camera.Pos, tr_vec);
+}
 
 function InitGL(canvas) {
     try {
@@ -49,10 +116,10 @@ function GetShader(gl, FileName) {
     gl.shaderSource(shader, str);
     gl.compileShader(shader);
 
-  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    alert(gl.getShaderInfoLog(shader));
-    return null;
-  }
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        alert(gl.getShaderInfoLog(shader));
+        return null;
+    }
 
     return shader;
 }
@@ -122,7 +189,7 @@ function SetMatrixUniforms() {
     CamDir.x = LookAt.x - Pos.x;
     CamDir.y = LookAt.y - Pos.y;
     CamDir.z = LookAt.z - Pos.z;
- 
+
     gl.uniform3f(shaderProgram.CamPosUnifrom, CamPos.x, CamPos.y, CamPos.z);
     gl.uniform3f(shaderProgram.CamViewUnifrom, CamDir.x, CamDir.y, CamDir.z);
     gl.uniform1f(shaderProgram.ProjDistUnifrom, 1);
