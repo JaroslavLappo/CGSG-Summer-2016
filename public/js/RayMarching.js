@@ -251,17 +251,31 @@ function InitPointerLock(canvas) {
             return;
         }
         if (isLocked()) {
-            // document.addEventListener("mousemove", cameraRotate, false);
+            document.addEventListener("mousemove", controlsMouse, false);
             document.body.classList.add('locked');
         } else {
-            // document.removeEventListener("mousemove", cameraRotate, false);
+            document.removeEventListener("mousemove", controlsMouse, false);
             document.body.classList.remove('locked');
         }
-    }
+    };
 
     document.addEventListener('pointerlockchange', changeCallback, false);
     document.addEventListener('mozpointerlockchange', changeCallback, false);
     document.addEventListener('webkitpointerlockchange', changeCallback, false);
+}
+
+function controlsMouse(event) {
+    var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+    var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+
+    movementX *= 0.002;
+    movementY *= 0.002;
+
+    movementX = Math.min(Math.PI / 2, movementX);
+    movementX = Math.max(-Math.PI / 2, movementX);
+
+    CameraRotateX(movementX);
+    CameraRotateY(movementY);
 }
 
 function WebGLStart() {
