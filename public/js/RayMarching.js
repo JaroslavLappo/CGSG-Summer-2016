@@ -69,7 +69,7 @@ function InitShaders() {
     gl.attachShader(shaderProgram, fragmentShader);
     gl.linkProgram(shaderProgram);
     if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-        alert("Could not initialise shaders");
+        alert(/*"Could not initialise shaders"*/gl.getProgramInfoLog(shaderProgram));
     }
     gl.useProgram(shaderProgram);
     shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
@@ -102,7 +102,7 @@ function SetMatrixUniforms() {
 
     TimeVec.x = Math.cos(time);
     TimeVec.y = Math.sin(time);
-    TimeVec.z = Math.sin(time / 2);
+    TimeVec.z = Math.abs(Math.sin(time / 2));
 
     Pos.x = TimeVec.x * 0.4;
     Pos.y = TimeVec.z * 0.6;

@@ -2,9 +2,9 @@ precision mediump float;
 
 #define Pi 3.1415926535897932384626433832795028841971
 
-float sdPlane( vec3 p )
+float sdPlane( vec3 p, float h )
 {
-	return p.y;
+	return p.y - h;
 }
 
 float sdSphere( vec3 p, float s )
@@ -225,14 +225,17 @@ vec3 Twist( vec3 p )
     float s = sin(1.2*p.y);
     mat2  m = mat2(c,-s,s,c);
     vec2 xz = m * p.xz;
-    vec3  q = vec3(xz.x, p.y, xz.y);
+    vec3  q = vec3(xz, p.y);
     return q;
 }
 
-float SDF( vec3 Point )
+vec2 SDF( vec3 Point )
 {
   //return SDF_torus(RotateX(Twist(Point), 90.0 / 180.0 * Pi), vec2(6, 2));
-  return map(Point).x;
+  //return map(Point).x;
+  vec2 Prism = vec2(sdCylinder(RotateX(Point, 90.0 / 180.0 * Pi), vec2(0.1, 0.2)), 1.0);
+  vec2 Plane = vec2(sdPlane(Point, -0.1), 2.0);
+  return opU(Prism, Plane);
 }
 
 uniform vec3 CamPos;
@@ -261,15 +264,15 @@ vec2 GetIntersection( vec3 V )
   {
     float d;
 
-    d = SDF(R(V, T));
+    d = SDF(R(V, T)).x;
     T += d;
 
     if (d < dMin || T > tMax)
       break;
   }
 
-  if (SDF(R(V, T)) < dMin)
-    return vec2(T, 1.0);
+  if (SDF(R(V, T)).x < dMin)
+    return vec2(T, SDF(R(V, T)).y);
   else
     return vec2(0.0, 0.0);
 }
@@ -278,14 +281,14 @@ vec3 Normal( vec3 Point )
 {
   float E = 0.00001;
 
-  return normalize(vec3(SDF(Point + vec3(E, 0, 0)) - SDF(Point - vec3(E, 0, 0)),
-                        SDF(Point + vec3(0, 0, E)) - SDF(Point - vec3(0, E, 0)),
-                        SDF(Point + vec3(0, 0, E)) - SDF(Point - vec3(0, 0, E))));
+  return normalize(vec3(SDF(Point + vec3(E, 0, 0)).x - SDF(Point - vec3(E, 0, 0)).x,
+                        SDF(Point + vec3(0, 0, E)).x - SDF(Point - vec3(0, E, 0)).x,
+                        SDF(Point + vec3(0, 0, E)).x - SDF(Point - vec3(0, 0, E)).x));
 }
 
 vec3 Shade( vec3 Point, vec3 View, vec3 Normal )
 {
-  vec3 LightDir = vec3(1, -4, 0.2);
+  vec3 LightPos = vec3(0.2, 0.3, 0.2);
   vec3 LightColor = vec3(1.0, 0.5, 0.5);
   vec3 Ka = vec3(0.4);
   vec3 Ke = vec3(0.0);
@@ -296,18 +299,22 @@ vec3 Shade( vec3 Point, vec3 View, vec3 Normal )
 
   Color += Ka;
 
-  Color += Kd * dot(Normal, normalize(-LightDir));
+  Color += Kd * dot(Normal, normalize(LightPos - Point));
 
   vec3 Reflect;
 
-  Reflect = normalize(2.0 * Normal + LightDir);
+  Reflect = normalize(2.0 * Normal + normalize(Point - LightPos));
 
   float ReflectRes = dot(View, Reflect);
 
   if (ReflectRes > 0.0)
     Color += Ks * pow(ReflectRes, Kp);
 
-  return Color;
+  float dist = length(Point - LightPos);
+
+  if (dist > 2.0)
+    return vec3(0.0);
+  return (1.0 - dist / 2.0) * Color;
 }
 
 void main( void )
