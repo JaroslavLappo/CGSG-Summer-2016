@@ -81,9 +81,11 @@ function InitShaders() {
     shaderProgram.CamViewUnifrom = gl.getUniformLocation(shaderProgram, "CamView");
     shaderProgram.ProjDistUnifrom = gl.getUniformLocation(shaderProgram, "ProjDist");
     shaderProgram.TimeUnifrom = gl.getUniformLocation(shaderProgram, "Time");
+    shaderProgram.LightPosUnifrom = gl.getUniformLocation(shaderProgram, "LightPos");
 }
 
 var vMatrix = mat4.create();
+var CameraMode = "Circle";
 
 function SetMatrixUniforms() {
     var time = Date.now() / 1000.0;
@@ -100,9 +102,17 @@ function SetMatrixUniforms() {
     LookAt.y = 0.2;
     LookAt.z = 0;
 
-    TimeVec.x = Math.cos(time);
-    TimeVec.y = Math.sin(time);
-    TimeVec.z = Math.abs(Math.sin(time / 2));
+    if (CameraMode == "Lissazhu") {
+        TimeVec.x = Math.cos(time * 4 / 3);
+        TimeVec.y = Math.sin(time * 4 / 5);
+        TimeVec.z = (Math.sin(time * 4 / 2) + 1) / 2;
+    }
+
+    if (CameraMode == "Circle") {
+        TimeVec.x = Math.cos(time);
+        TimeVec.y = Math.sin(time);
+        TimeVec.z = (Math.sin(time / 2) + 1) / 2;
+    }
 
     Pos.x = TimeVec.x * 0.4;
     Pos.y = TimeVec.z * 0.6;
@@ -117,6 +127,7 @@ function SetMatrixUniforms() {
     gl.uniform3f(shaderProgram.CamViewUnifrom, CamDir.x, CamDir.y, CamDir.z);
     gl.uniform1f(shaderProgram.ProjDistUnifrom, 1);
     gl.uniform1f(shaderProgram.TimeUnifrom, time);
+    gl.uniform3f(shaderProgram.LightPosUnifrom, 0.5 * TimeVec.y, 1 - TimeVec.z, 0.5 * TimeVec.x);
 }
 
 var squareVertexPositionBuffer;
@@ -200,4 +211,8 @@ function WebGLStart() {
     }
 
     Update();
+}
+
+function SetCamera(mode) {
+    CameraMode = mode;
 }

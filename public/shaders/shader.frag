@@ -1,5 +1,7 @@
 precision mediump float;
 
+uniform vec3 LightPos;
+
 #define Pi 3.1415926535897932384626433832795028841971
 
 float sdPlane( vec3 p, float h )
@@ -235,7 +237,9 @@ vec2 SDF( vec3 Point )
   //return map(Point).x;
   vec2 Prism = vec2(sdCylinder(RotateX(Point, 90.0 / 180.0 * Pi), vec2(0.1, 0.2)), 1.0);
   vec2 Plane = vec2(sdPlane(Point, -0.1), 2.0);
-  return opU(Prism, Plane);
+  vec2 LightSource = vec2(sdSphere(Point - LightPos, 0.03), -1.0);
+
+  return opU(opU(Prism, Plane), LightSource);
 }
 
 uniform vec3 CamPos;
@@ -245,36 +249,59 @@ uniform float ProjDist;
 uniform int Width;
 uniform int Height;
 
-vec3 R( vec3 V, float T )
+vec3 Ray( vec3 Origin, vec3 Direction, float T )
 {
-  return CamPos + V * T;
+  return Origin + Direction * T;
 }
 
-vec2 GetIntersection( vec3 V )
+const float tMin = 0.001;
+const float tMax = 1000.0;
+const float dMin = 0.000001;
+const int iterMax = 500;
+
+vec2 Intersect( vec3 V )
 {
-  const float tMin = 0.0;
-  const float tMax = 1000.0;
-  const float dMin = 0.000001;
-
-  const int iterMax = 1000;
-
   float T = tMin;
 
   for (int i = 0; i < iterMax; i++)
   {
     float d;
 
-    d = SDF(R(V, T)).x;
+    d = SDF(Ray(CamPos, V, T)).x;
     T += d;
 
     if (d < dMin || T > tMax)
       break;
   }
 
-  if (SDF(R(V, T)).x < dMin)
-    return vec2(T, SDF(R(V, T)).y);
+  if (SDF(Ray(CamPos, V, T)).x < dMin)
+    return vec2(T, SDF(Ray(CamPos, V, T)).y);
   else
     return vec2(0.0, 0.0);
+}
+
+float IntersectShadow( vec3 Point, vec3 Light )
+{
+  float T = 2.0 * tMin;
+  vec3 Direction = normalize(Light - Point);
+
+  for (int i = 0; i < iterMax; i++)
+  {
+    float d;
+    vec2 sdf;
+
+    sdf = SDF(Ray(Point, Direction, T));
+    d = sdf.x;
+    T += d;
+
+    if (d < dMin || T > tMax)
+      break;
+  }
+
+  if (SDF(Ray(Point, Direction, T)).y < 0.0)
+    return 1.0;
+  else
+    return 0.0;
 }
 
 vec3 Normal( vec3 Point )
@@ -286,16 +313,27 @@ vec3 Normal( vec3 Point )
                         SDF(Point + vec3(0, 0, E)).x - SDF(Point - vec3(0, 0, E)).x));
 }
 
-vec3 Shade( vec3 Point, vec3 View, vec3 Normal )
+vec3 Shade( vec3 Point, vec3 View, vec3 Normal, float Material )
 {
-  vec3 LightPos = vec3(0.2, 0.3, 0.2);
-  vec3 LightColor = vec3(1.0, 0.5, 0.5);
-  vec3 Ka = vec3(0.4);
+  vec3 LightColor = vec3(1.0, 1.0, 1.0);
+  vec3 Ka = vec3(0.0);
   vec3 Ke = vec3(0.0);
   vec3 Kd = vec3(0.3, 1.0, 0.8);
-  vec3 Ks = vec3(0.1);
-  float Kp = 0.1;
+  vec3 Ks = vec3(0.2);
+  float Kp = 0.6;
   vec3 Color = vec3(0.0, 0.0, 0.0);
+  float Shadow;
+
+  Shadow = IntersectShadow(Point, LightPos);
+
+  if (Shadow < 0.5)
+    return Ka + Ke;
+
+  if (abs(Material - 2.0) < 0.1)
+    Kd = vec3(0.7, 0.0, 0.0);
+
+  if (abs(Material - -1.0) < 0.1)
+    return LightColor;
 
   Color += Ka;
 
@@ -305,10 +343,14 @@ vec3 Shade( vec3 Point, vec3 View, vec3 Normal )
 
   Reflect = normalize(2.0 * Normal + normalize(Point - LightPos));
 
-  float ReflectRes = dot(View, Reflect);
+  float ReflectRes = -dot(View, Reflect);
 
   if (ReflectRes > 0.0)
     Color += Ks * pow(ReflectRes, Kp);
+
+  Color *= LightColor;
+
+  Color += Ke;
 
   float dist = length(Point - LightPos);
 
@@ -341,15 +383,16 @@ void main( void )
 
   V = normalize(CamViewProjDist + XOff * Right + YOff * Up);
 
-  vec2 Inter = GetIntersection(V);
+  vec2 Inter = Intersect(V);
 
-  if (Inter.y > 0.5)
+  if (abs(Inter.y) > 0.5)
   {
-    vec3 point = R(V, Inter.x);
+    vec3 point = Ray(CamPos, V, Inter.x);
     vec3 normal = Normal(point);
 ///*Depth*/    gl_FragColor = vec4((1.0 - Inter.x / 2.0) * vec3(1.0, 1.0, 1.0), 1.0);
 ///*Normal*/    gl_FragColor = vec4(normal, 1.0);
-/*Lighting*/    gl_FragColor = vec4(Shade(point, V, normal), 1.0);
+/*Lighting*/    gl_FragColor = vec4(Shade(point, V, normal, Inter.y), 1.0);
+///*Material*/    gl_FragColor = vec4(vec3((Inter.y + 1.0) / 3.0), 1.0);
   }
   else
     gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
