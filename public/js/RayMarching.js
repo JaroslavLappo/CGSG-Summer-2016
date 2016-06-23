@@ -14,7 +14,7 @@ javascript:(function () {
 
 var gl;
 
-var Camera;
+var Camera = {};
 var zero_vec = vec3.create();
 vec3.set(zero_vec, 0, 0, 0);
 var up_vec = vec3.create();
@@ -26,7 +26,7 @@ function CameraInit() {
     Camera.Up = vec3.create();
     Camera.Right = vec3.create();
 
-    vec3.set(Camera.Pos, 0, 0, 0);
+    vec3.set(Camera.Pos, 0.0, 0.6, 0.6);
     vec3.set(Camera.Up, 0, 1, 0);
     vec3.set(Camera.Dir, 0, 0, -1);
     vec3.set(Camera.Right, 1, 0, 0);
@@ -152,7 +152,7 @@ function InitShaders() {
 }
 
 var vMatrix = mat4.create();
-var CameraMode = "Circle";
+var CameraMode = "Game";
 
 function SetMatrixUniforms() {
     var time = Date.now() / 1000.0;
@@ -189,6 +189,21 @@ function SetMatrixUniforms() {
     CamDir.x = LookAt.x - Pos.x;
     CamDir.y = LookAt.y - Pos.y;
     CamDir.z = LookAt.z - Pos.z;
+
+    if (CameraMode == "Game") {
+      CamDir.x = Camera.Dir[0];
+      CamDir.y = Camera.Dir[1];
+      CamDir.z = Camera.Dir[2];
+      CamPos.x = Camera.Pos[0];
+      CamPos.y = Camera.Pos[1];
+      CamPos.z = Camera.Pos[2];
+      TimeVec.x = Math.cos(time * 4 / 3);
+      TimeVec.y = Math.sin(time * 4 / 5);
+      TimeVec.z = (Math.sin(time * 4 / 2) + 1) / 2;
+    }
+
+  console.log("Camera position:  x = " + CamPos.x + "; y = " + CamPos.y + "; z = " + CamPos.z);
+  console.log("Camera direction: x = " + CamDir.x + "; y = " + CamDir.y + "; z = " + CamDir.z);
 
     gl.uniform3f(shaderProgram.CamPosUnifrom, CamPos.x, CamPos.y, CamPos.z);
     gl.uniform3f(shaderProgram.CamViewUnifrom, CamDir.x, CamDir.y, CamDir.z);
@@ -246,10 +261,6 @@ function InitPointerLock(canvas) {
     }, false);
 
     var changeCallback = function () {
-        if (!havePointerLock) {
-            alert('Your browser do not support pointer-lock');
-            return;
-        }
         if (isLocked()) {
             document.addEventListener("mousemove", controlsMouse, false);
             document.body.classList.add('locked');
@@ -268,14 +279,14 @@ function controlsMouse(event) {
     var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
     var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
 
-    movementX *= 0.002;
-    movementY *= 0.002;
+    movementX *= 0.006;
+    movementY *= 0.006;
 
     movementX = Math.min(Math.PI / 2, movementX);
     movementX = Math.max(-Math.PI / 2, movementX);
 
-    CameraRotateX(movementX);
-    CameraRotateY(movementY);
+    CameraRotateX(-movementY);
+    CameraRotateY(-movementX);
 }
 
 function WebGLStart() {
@@ -284,6 +295,7 @@ function WebGLStart() {
     InitGL(canvas);
     InitShaders();
     InitBuffers();
+    CameraInit();
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
     function Update() {
