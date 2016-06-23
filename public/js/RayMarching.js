@@ -34,10 +34,14 @@ function CameraInit() {
 
 function CameraRotateX(angle) {
     mrot = mat4.create();
+    new_up = vec3.create();
     mat4.identity(mrot);
     mat4.rotate(mrot, mrot, angle, Camera.Right);
-    vec3.transformMat4(Camera.Up, Camera.Up, mrot);
-    vec3.transformMat4(Camera.Dir, Camera.Dir, mrot);
+    vec3.transformMat4(new_up, Camera.Up, mrot);
+    if (new_up[1] > 0) {
+      vec3.transformMat4(Camera.Dir, Camera.Dir, mrot);
+      vec3.copy(Camera.Up, new_up);
+    }
 }
 
 function CameraRotateY(angle) {
@@ -202,8 +206,8 @@ function SetMatrixUniforms() {
       TimeVec.z = (Math.sin(time * 4 / 2) + 1) / 2;
     }
 
-  console.log("Camera position:  x = " + CamPos.x + "; y = " + CamPos.y + "; z = " + CamPos.z);
-  console.log("Camera direction: x = " + CamDir.x + "; y = " + CamDir.y + "; z = " + CamDir.z);
+//    console.log("Camera position:  x = " + CamPos.x + "; y = " + CamPos.y + "; z = " + CamPos.z);
+//    console.log("Camera direction: x = " + CamDir.x + "; y = " + CamDir.y + "; z = " + CamDir.z);
 
     gl.uniform3f(shaderProgram.CamPosUnifrom, CamPos.x, CamPos.y, CamPos.z);
     gl.uniform3f(shaderProgram.CamViewUnifrom, CamDir.x, CamDir.y, CamDir.z);
