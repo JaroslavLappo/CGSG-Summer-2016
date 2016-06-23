@@ -267,9 +267,11 @@ function InitPointerLock(canvas) {
     var changeCallback = function () {
         if (isLocked()) {
             document.addEventListener("mousemove", controlsMouse, false);
+            document.addEventListener("keydown", controlsKeyboard, false);
             document.body.classList.add('locked');
         } else {
             document.removeEventListener("mousemove", controlsMouse, false);
+            document.removeEventListener("keydown", controlsKeyboard, false);
             document.body.classList.remove('locked');
         }
     };
@@ -291,6 +293,22 @@ function controlsMouse(event) {
 
     CameraRotateX(-movementY);
     CameraRotateY(-movementX);
+}
+
+function controlsKeyboard(event) {
+  var key = event.keyCode;
+
+  var speed = 0.1;
+
+  if (key == 87)
+    CameraTranslate(0, 0, -speed);
+  if (key == 65)
+    CameraTranslate(-speed, 0, 0);
+  if (key == 83)
+    CameraTranslate(0, 0, speed);
+  if (key == 68)
+    CameraTranslate(speed, 0, 0);
+  //console.log("Pressed: " + key);
 }
 
 function WebGLStart() {
