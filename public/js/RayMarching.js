@@ -191,51 +191,35 @@ function SetMatrixUniforms() {
     var Pos = vec3.create();
     var LookAt = vec3.create();
 
-    LookAt.x = 0;
-    LookAt.y = 0.2;
-    LookAt.z = 0;
+    vec3.set(LookAt, 0, 0.2, 0);
 
-    if (CameraMode == "Lissazhu") {
-        TimeVec.x = Math.cos(time * 4 / 3);
-        TimeVec.y = Math.sin(time * 4 / 5);
-        TimeVec.z = (Math.sin(time * 4 / 2) + 1) / 2;
-    }
+    if (CameraMode == "Lissazhu")
+      vec3.set(TimeVec, Math.cos(time * 4 / 3), Math.sin(time * 4 / 5), (Math.sin(time * 4 / 2) + 1) / 2);
 
-    if (CameraMode == "Circle") {
-        TimeVec.x = Math.cos(time);
-        TimeVec.y = Math.sin(time);
-        TimeVec.z = (Math.sin(time / 2) + 1) / 2;
-    }
+    if (CameraMode == "Circle")
+      vec3.set(TimeVec, Math.cos(time), Math.sin(time), (Math.sin(time / 2) + 1) / 2);
 
-    Pos.x = TimeVec.x * 0.4;
-    Pos.y = TimeVec.z * 0.6;
-    Pos.z = TimeVec.y * 0.4;
+    Pos[0] = TimeVec[0] * 0.4;
+    Pos[1] = TimeVec[2] * 0.6;
+    Pos[2] = TimeVec[1] * 0.4;
 
-    CamPos = Pos;
-    CamDir.x = LookAt.x - Pos.x;
-    CamDir.y = LookAt.y - Pos.y;
-    CamDir.z = LookAt.z - Pos.z;
+    vec3.subtract(CamDir, LookAt, Pos);
+
+    vec3.copy(CamPos, Pos);
 
     if (CameraMode == "Game") {
-      CamDir.x = Camera.Dir[0];
-      CamDir.y = Camera.Dir[1];
-      CamDir.z = Camera.Dir[2];
-      CamPos.x = Camera.Pos[0];
-      CamPos.y = Camera.Pos[1];
-      CamPos.z = Camera.Pos[2];
-      TimeVec.x = Math.cos(time * 4 / 3);
-      TimeVec.y = Math.sin(time * 4 / 5);
-      TimeVec.z = (Math.sin(time * 4 / 2) + 1) / 2;
+      vec3.copy(CamDir, Camera.Dir);
+      vec3.copy(CamPos, Camera.Pos);
+      vec3.set(TimeVec, Math.cos(time * 4 / 3), Math.sin(time * 4 / 5), (Math.sin(time * 4 / 2) + 1) / 2);
     }
 
-//    console.log("Camera position:  x = " + CamPos.x + "; y = " + CamPos.y + "; z = " + CamPos.z);
-//    console.log("Camera direction: x = " + CamDir.x + "; y = " + CamDir.y + "; z = " + CamDir.z);
+    vec3.normalize(CamDir, CamDir);
 
-    gl.uniform3f(shaderProgram.CamPosUnifrom, CamPos.x, CamPos.y, CamPos.z);
-    gl.uniform3f(shaderProgram.CamViewUnifrom, CamDir.x, CamDir.y, CamDir.z);
+    gl.uniform3f(shaderProgram.CamPosUnifrom, CamPos[0], CamPos[1], CamPos[2]);
+    gl.uniform3f(shaderProgram.CamViewUnifrom, CamDir[0], CamDir[1], CamDir[2]);
     gl.uniform1f(shaderProgram.ProjDistUnifrom, 1);
     gl.uniform1f(shaderProgram.TimeUnifrom, time);
-    gl.uniform3f(shaderProgram.LightPosUnifrom, 0.5 * TimeVec.y, 1 - TimeVec.z, 0.5 * TimeVec.x);
+    gl.uniform3f(shaderProgram.LightPosUnifrom, 0.5 * TimeVec[1], 1 - TimeVec[2], 0.5 * TimeVec[0]);
 }
 
 var squareVertexPositionBuffer;
