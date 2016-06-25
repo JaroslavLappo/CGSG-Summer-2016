@@ -3,6 +3,27 @@ vec3 Ray( vec3 Origin, vec3 Direction, float T )
   return Origin + Direction * T;
 }
 
+vec3 GetPixelView( vec3 CameraView, float ProjDist, int Width, int Height )
+{
+  float XOff, YOff;
+  float XScale = 1.0 * float(Width);
+  float YScale = 1.0 * float(Height);
+
+  vec3 Up = vec3(0, 1, 0);
+  vec3 Right = normalize(cross(CameraView, Up));
+  Up = cross(Right, CameraView);
+
+  if (Width > Height)
+    YScale *= float(Width) / float(Height);
+  else
+    XScale *= float(Height) / float(Width);
+
+  XOff = gl_FragCoord.x / XScale * 2.0 - 1.0;
+  YOff = gl_FragCoord.y / YScale * 2.0 - 1.0;
+
+  return normalize(XOff * Right + YOff * Up + ProjDist * CamView);
+}
+
 vec2 Intersect( vec3 V )
 {
   float T = tMin;
