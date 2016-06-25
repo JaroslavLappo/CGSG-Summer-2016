@@ -106,8 +106,30 @@ function fopen(FileName) {
     return str;
 }
 
+function PreprocessorInclude( str, PathOriginFile )
+{
+    var str12, strIncl;
+    var PathOriginDirectory;
+
+    PathOriginDirectory = (PathOriginFile.split('').reverse().join('').substring(PathOriginFile.split('').reverse().join('').search("/"))).split('').reverse().join('');
+
+    if (str.search("#include") == -1)
+      return str;
+
+    str12 = str.split("#include");
+
+    strIncl = fopen(PathOriginDirectory + str12[1].split('"')[1]);
+    str12[1] = str12[1].split('"')[2]
+    str12[1] = str12.slice(1).join("#include");
+
+    return PreprocessorInclude(str12[0] + strIncl + str12[1], PathOriginFile);
+}
+
 function GetShader(gl, FileName) {
     var str = fopen(FileName);
+
+    str = PreprocessorInclude(str, FileName);
+
     var shader;
     if (FileName.split('.')[1] == "frag") {
         shader = gl.createShader(gl.FRAGMENT_SHADER);
