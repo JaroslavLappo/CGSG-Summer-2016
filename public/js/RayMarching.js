@@ -75,14 +75,11 @@ function CameraTranslate(x, y, z) {
 
 function InitGL(canvas) {
     try {
-        gl = canvas.getContext("webgl2");
+        gl = canvas.getContext("experimental-webgl2");
         if (!gl) {
-            gl = canvas.getContext("webgl");
+            gl = canvas.getContext("webgl2");
             if (!gl) {
-                gl = canvas.getContext("experimental-webgl");
-                if (!gl) {
-                    alert('Your browser doesn`t support WebGL.');
-                }
+                alert('Your browser doesn`t support WebGL 2.0. Please google how to enable it.');
             }
         }
         gl.viewportWidth = canvas.width;
@@ -106,8 +103,7 @@ function fopen(FileName) {
     return str;
 }
 
-function PreprocessorInclude( str, PathOriginFile )
-{
+function PreprocessorInclude( str, PathOriginFile ) {
     var str12, strIncl;
     var PathOriginDirectory;
 
