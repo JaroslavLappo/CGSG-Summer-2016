@@ -234,6 +234,40 @@ function InitBuffers() {
     squareVertexPositionBuffer.numItems = 4;
 }
 
+function LoadSDF(Model) {
+  var Width = 8, Height = 8, Depth = 8;
+//  var Width = 16, Height = 32, Depth = 128;
+  var Image = gl.createTexture();
+
+  gl.bindTexture(gl.TEXTURE_3D, Image)
+  gl.texStorage3D(gl.TEXTURE_3D, 1, gl.R32F, Width, Height, Depth);
+
+  var data = new Array();
+
+  for (var i = 0; i < Depth; i++) {
+    for (var j = 0; j < Height; j++) {
+      for (var k = 0; k < Width; k++) {
+        var x = i - 4;
+        var y = j - 4;
+        var z = k - 4;
+        data[i * Height * Width + j * Width + k] = Math.sqrt(x * x + y * y + z * z) - 2.5;
+      }
+    }
+  }
+
+  gl.texSubImage3D(gl.TEXTURE_3D, 0, 0, 0, 0, Width, Height, Depth, gl.RED, gl.FLOAT, new Float32Array(data));
+
+  gl.bindTexture(gl.TEXTURE_3D, null);
+  return Image;
+}
+
+var Sphere;
+
+function InitTextures() {
+//  alert("Maximal 3d texture size is " + gl.getParameter(gl.MAX_3D_TEXTURE_SIZE));
+  Sphere = LoadSDF(null);
+}
+
 function DrawScene() {
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -319,6 +353,7 @@ function WebGLStart() {
     InitGL(canvas);
     InitShaders();
     InitBuffers();
+    InitTextures();
     CameraInit();
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
 

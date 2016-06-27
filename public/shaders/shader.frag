@@ -25,11 +25,7 @@ vec2 SDF( vec3 Point )
 
 int GetMaterial( vec3 Point )
 {
-  vec2 Prism = vec2(sdCylinder(RotateX(Point, 90.0 / 180.0 * Pi), vec2(0.1, 0.2)), 1.0);
-  vec2 Plane = vec2(sdPlane(Point, -0.1), 2.0);
-  vec2 LightSource = vec2(sdSphere(Point - LightPos, 0.03), -1.0);
-
-  return int(opU(opU(Prism, Plane), LightSource).y);
+  return int(SDF(Point).y);
 }
 
 #include "ray-marching.frag"
