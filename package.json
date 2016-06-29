@@ -5,7 +5,8 @@
   "main": "server.js",
   "dependencies": {
     "express": "4.13.4",
-    "socket.io": "1.4.6"
+    "socket.io": "1.4.6",
+    "gl-matrix": "2.2.1"
   },
   "devDependencies": {},
   "scripts": {

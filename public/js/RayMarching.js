@@ -10,10 +10,74 @@ javascript:(function () {
     };
     script.src = '//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';
     document.head.appendChild(script);
-})()
+})();
+
+var _debug_pos = vec3.create();
+vec3.set(_debug_pos, 13, 3, 7);
+var _send_delta = 30;
+var players = [];
+var lplayer = {
+    id: null,
+    name: null,
+    pos: vec3.create()
+};
+var socket;
+
+function NetworkInit(name) {
+    socket = io();
+
+    socket.on('add_user', function (data) {
+        var player = data;
+        players.push(player);
+        if (player.id == null)
+            lplayer = player;
+    });
+
+    socket.on('send_pos', function (data) {
+        var i = 0;
+        while (players[i].id != data.id && i < players.length)
+            i++;
+
+        vec3.copy(players[i].pos, data.pos);
+        console.log('player id: ' + (players[i].id).toString() +
+            'pos: ' + vec3.str(players[i].pos));
+    });
+
+    socket.on('send_name', function (data) {
+        var i = 0;
+        while (players[i].id != data.id && i < players.length)
+            i++;
+
+        players.name = data.name;
+    });
+
+    socket.on('disconnect', function () {
+        console.log('Disconnected from server');
+    });
+
+
+    function PosSend(timeout) {
+        lplayer.pos = Camera.Pos;
+        if (!vec3cmp(oldpos, lplayer.pos)) {
+            socket.emit('send_pos', lplayer.pos);
+            vec3.copy(oldpos, lplayer.pos);
+        }
+        setTimeout(PosSend, timeout, timeout);
+    }
+
+    PosSend(100);
+}
+
+function vec3cmp(a, b) {
+    if (a[0] == b[0])
+        if (a[1] == b[1])
+            if (a[2] == b[2])
+                return true;
+    return false;
+}
 
 var gl;
-
+var oldpos = vec3.create();
 var Camera = {};
 var zero_vec = vec3.create();
 vec3.set(zero_vec, 0, 0, 0);
@@ -39,8 +103,8 @@ function CameraRotateX(angle) {
     mat4.rotate(mrot, mrot, angle, Camera.Right);
     vec3.transformMat4(new_up, Camera.Up, mrot);
     if (new_up[1] > 0) {
-      vec3.transformMat4(Camera.Dir, Camera.Dir, mrot);
-      vec3.copy(Camera.Up, new_up);
+        vec3.transformMat4(Camera.Dir, Camera.Dir, mrot);
+        vec3.copy(Camera.Up, new_up);
     }
 }
 
@@ -110,7 +174,7 @@ function PreprocessorInclude( str, PathOriginFile ) {
     PathOriginDirectory = (PathOriginFile.split('').reverse().join('').substring(PathOriginFile.split('').reverse().join('').search("/"))).split('').reverse().join('');
 
     if (str.search("#include") == -1)
-      return str;
+        return str;
 
     str12 = str.split("#include");
 
@@ -171,7 +235,6 @@ function InitShaders() {
     shaderProgram.ProjDistUnifrom = gl.getUniformLocation(shaderProgram, "ProjDist");
     shaderProgram.TimeUnifrom = gl.getUniformLocation(shaderProgram, "Time");
     shaderProgram.LightPosUnifrom = gl.getUniformLocation(shaderProgram, "LightPos");
-    shaderProgram.TextureUnfirom = gl.getUniformLocation(shaderProgram, "Texture");
 }
 
 var vMatrix = mat4.create();
@@ -191,10 +254,10 @@ function SetMatrixUniforms() {
     vec3.set(LookAt, 0, 0.2, 0);
 
     if (CameraMode == "Lissazhu")
-      vec3.set(TimeVec, Math.cos(time * 4 / 3), Math.sin(time * 4 / 5), (Math.sin(time * 4 / 2) + 1) / 2);
+        vec3.set(TimeVec, Math.cos(time * 4 / 3), Math.sin(time * 4 / 5), (Math.sin(time * 4 / 2) + 1) / 2);
 
     if (CameraMode == "Circle")
-      vec3.set(TimeVec, Math.cos(time), Math.sin(time), (Math.sin(time / 2) + 1) / 2);
+        vec3.set(TimeVec, Math.cos(time), Math.sin(time), (Math.sin(time / 2) + 1) / 2);
 
     Pos[0] = TimeVec[0] * 0.4;
     Pos[1] = TimeVec[2] * 0.6;
@@ -205,9 +268,9 @@ function SetMatrixUniforms() {
     vec3.copy(CamPos, Pos);
 
     if (CameraMode == "Game") {
-      vec3.copy(CamDir, Camera.Dir);
-      vec3.copy(CamPos, Camera.Pos);
-      vec3.set(TimeVec, Math.cos(time * 4 / 3), Math.sin(time * 4 / 5), (Math.sin(time * 4 / 2) + 1) / 2);
+        vec3.copy(CamDir, Camera.Dir);
+        vec3.copy(CamPos, Camera.Pos);
+        vec3.set(TimeVec, Math.cos(time * 4 / 3), Math.sin(time * 4 / 5), (Math.sin(time * 4 / 2) + 1) / 2);
     }
 
     vec3.normalize(CamDir, CamDir);
@@ -336,19 +399,19 @@ function controlsMouse(event) {
 }
 
 function controlsKeyboard(event) {
-  var key = event.keyCode;
+    var key = event.keyCode;
 
-  var speed = 0.1;
+    var speed = 0.1;
 
-  if (key == 87)
-    CameraTranslate(0, 0, -speed);
-  if (key == 65)
-    CameraTranslate(-speed, 0, 0);
-  if (key == 83)
-    CameraTranslate(0, 0, speed);
-  if (key == 68)
-    CameraTranslate(speed, 0, 0);
-  //console.log("Pressed: " + key);
+    if (key == 87)
+        CameraTranslate(0, 0, -speed);
+    if (key == 65)
+        CameraTranslate(-speed, 0, 0);
+    if (key == 83)
+        CameraTranslate(0, 0, speed);
+    if (key == 68)
+        CameraTranslate(speed, 0, 0);
+    //console.log("Pressed: " + key);
 }
 
 function WebGLStart() {
@@ -359,6 +422,7 @@ function WebGLStart() {
     InitBuffers();
     InitTextures();
     CameraInit();
+    NetworkInit();
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
     function Update() {
