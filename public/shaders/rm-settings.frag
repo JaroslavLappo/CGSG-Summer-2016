@@ -1,5 +1,5 @@
 const float tMin = 0.001;
-const float tMax = 1000.0;
+const float tMax = 10.0;
 const float dMin = 0.000001;
 const int iterMax = 500;
 
