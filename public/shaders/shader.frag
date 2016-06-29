@@ -12,11 +12,14 @@ uniform int Height;
 #include "primitives.frag"
 #include "operations.frag"
 
+#include "models.frag"
+
 uniform vec3 LightPos;
 
 vec2 SDF( vec3 Point )
 {
-  vec2 Prism = vec2(sdCylinder(RotateX(Point, 90.0 / 180.0 * Pi), vec2(0.1, 0.2)), 1.0);
+//  vec2 Prism = vec2(sdTexture(Point), 1.0);
+  vec2 Prism = vec2(sdHexPrism(RotateX(Point, 90.0 / 180.0 * Pi), vec2(0.1, 0.2)), 1.0);
   vec2 Plane = vec2(sdPlane(Point, -0.1), 2.0);
   vec2 LightSource = vec2(sdSphere(Point - LightPos, 0.03), -1.0);
 
