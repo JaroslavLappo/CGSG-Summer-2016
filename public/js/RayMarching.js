@@ -171,6 +171,7 @@ function InitShaders() {
     shaderProgram.ProjDistUnifrom = gl.getUniformLocation(shaderProgram, "ProjDist");
     shaderProgram.TimeUnifrom = gl.getUniformLocation(shaderProgram, "Time");
     shaderProgram.LightPosUnifrom = gl.getUniformLocation(shaderProgram, "LightPos");
+    shaderProgram.TextureUnfirom = gl.getUniformLocation(shaderProgram, "Texture");
 }
 
 var vMatrix = mat4.create();
@@ -216,6 +217,7 @@ function SetMatrixUniforms() {
     gl.uniform1f(shaderProgram.ProjDistUnifrom, 1);
     gl.uniform1f(shaderProgram.TimeUnifrom, time);
     gl.uniform3f(shaderProgram.LightPosUnifrom, 0.5 * TimeVec[1], 1 - TimeVec[2], 0.5 * TimeVec[0]);
+    gl.uniform1i(shaderProgram.TextureUnfirom, 0);
 }
 
 var squareVertexPositionBuffer;
@@ -266,6 +268,8 @@ var Sphere;
 function InitTextures() {
 //  alert("Maximal 3d texture size is " + gl.getParameter(gl.MAX_3D_TEXTURE_SIZE));
   Sphere = LoadSDF(null);
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_3D, Sphere);
 }
 
 function DrawScene() {

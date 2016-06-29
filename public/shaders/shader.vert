@@ -1,4 +1,8 @@
-attribute vec3 aVertexPosition;
+#version 300 es
+
+precision mediump float;
+
+in vec3 aVertexPosition;
 
 void main(void)
 {

@@ -1,4 +1,9 @@
+#version 300 es
+
 precision mediump float;
+precision mediump sampler3D;
+
+out vec4 Color;
 
 uniform vec3 CamPos;
 uniform vec3 CamView;
@@ -46,8 +51,8 @@ void main( void )
 ///*Intersection test*/    gl_FragColor = vec4(0, 1, 1, 1);
 ///*Depth*/    gl_FragColor = vec4((1.0 - Distance / 2.0) * vec3(1.0, 1.0, 1.0), 1.0);
 ///*Normal*/    gl_FragColor = vec4(Normal(Position), 1.0);
-/*Lighting*/    gl_FragColor = Lighting(Position);
+/*Lighting*/    Color = Lighting(Position);
   }
   else
-    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0); //Skybox(V);
+    Color = vec4(0.0, 0.0, 0.0, 1.0); //Skybox(V);
 }
