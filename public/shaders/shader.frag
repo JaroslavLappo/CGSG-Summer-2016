@@ -19,16 +19,27 @@ uniform int Height;
 
 #include "models.frag"
 
+#define MAX_PLAYERS 10
+
 uniform vec3 LightPos;
+uniform int PlayersNum;
+uniform vec3 PlayersPos[MAX_PLAYERS];
 
 vec2 SDF( vec3 Point )
 {
 //  vec2 Prism = vec2(sdTexture(Point), 1.0);
+  vec2 Players = vec2(1000.0, 0.0);
+
+  for (int i = 0; i < MAX_PLAYERS; i++)
+    if (i < PlayersNum)
+      Players = opU(Players, vec2(sdSphere(Point - PlayersPos[i], 0.03), 3.0));
+
   vec2 Prism = vec2(sdHexPrism(RotateX(Point, 90.0 / 180.0 * Pi), vec2(0.1, 0.2)), 1.0);
+ // Prism = Players;
   vec2 Plane = vec2(sdPlane(Point, -0.1), 2.0);
   vec2 LightSource = vec2(sdSphere(Point - LightPos, 0.03), -1.0);
 
-  return opU(opU(Prism, Plane), LightSource);
+  return opU(opU(opU(Prism, Plane), LightSource), Players);
 }
 
 int GetMaterial( vec3 Point )

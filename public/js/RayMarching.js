@@ -18,6 +18,7 @@ var lplayer = {
     name: null,
     pos: vec3.create()
 };
+var lplayer_num;
 var socket;
 
 function NetworkInit(name) {
@@ -26,8 +27,11 @@ function NetworkInit(name) {
     socket.on('add_user', function (data) {
         var player = data;
         players.push(player);
-        if (player.id == null)
-            lplayer = player;
+        if (player.id == null) {
+          lplayer = player;
+          lplayer_num = players.length - 1;
+        }
+
     });
 
     socket.on('rem_user', function (data) {
@@ -234,15 +238,18 @@ function InitShaders() {
     shaderProgram.ProjDistUnifrom = gl.getUniformLocation(shaderProgram, "ProjDist");
     shaderProgram.TimeUnifrom = gl.getUniformLocation(shaderProgram, "Time");
     shaderProgram.LightPosUnifrom = gl.getUniformLocation(shaderProgram, "LightPos");
+    shaderProgram.TextureUnfirom = gl.getUniformLocation(shaderProgram, "Texture");
+    shaderProgram.PlayersNumUniform = gl.getUniformLocation(shaderProgram, "PlayersNum");
+    shaderProgram.PlayersPosUniform = new Array();
+    for (var i = 0; i < 10; i++)
+      shaderProgram.PlayersPosUniform[i] = gl.getUniformLocation(shaderProgram, "PlayersPos[" + i + "]");
 }
 
-var vMatrix = mat4.create();
 var CameraMode = "Game";
 
 function SetMatrixUniforms() {
     var time = Date.now() / 1000.0;
 
-    gl.uniformMatrix4fv(shaderProgram.vMatrixUniform, false, vMatrix);
     gl.uniform1i(shaderProgram.WidthUniform, gl.viewportWidth);
     gl.uniform1i(shaderProgram.HeightUniform, gl.viewportHeight);
 
@@ -280,6 +287,14 @@ function SetMatrixUniforms() {
     gl.uniform1f(shaderProgram.TimeUnifrom, time);
     gl.uniform3f(shaderProgram.LightPosUnifrom, 0.5 * TimeVec[1], 1 - TimeVec[2], 0.5 * TimeVec[0]);
     gl.uniform1i(shaderProgram.TextureUnfirom, 0);
+    gl.uniform1i(shaderProgram.PlayersNumUniform, players.length - 1);
+
+    for (var i = 0, j = 0; i < players.length; i++)
+      if (players[i].id != null) {
+        gl.uniform3f(shaderProgram.PlayersPosUniform[j], players[i].pos[0], players[i].pos[1], players[i].pos[2]);
+        j++;
+        //console.log("Other player(" + i + ")(my players is " + lplayer_num + ") is on coordinates: " + players[i].pos[0] + " " + players[i].pos[1] + " " +  players[i].pos[2]);
+      }
 }
 
 var squareVertexPositionBuffer;
@@ -337,7 +352,6 @@ function InitTextures() {
 function DrawScene() {
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
     gl.clear(gl.COLOR_BUFFER_BIT);
-    mat4.identity(vMatrix);
     gl.bindBuffer(gl.ARRAY_BUFFER, squareVertexPositionBuffer);
     gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, squareVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
     SetMatrixUniforms();
