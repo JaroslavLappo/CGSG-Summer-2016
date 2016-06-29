@@ -8,9 +8,9 @@ vec4 Lighting( vec3 Position )
   vec3 Ks = vec3(0.2);
   float Kp = 0.6;
   vec3 Color = vec3(0.0, 0.0, 0.0);
-  float Shadow;
+  float Shadow = 1.0;
 
-  Shadow = IntersectShadow(Position, LightPos);
+  //Shadow = IntersectShadow(Position, LightPos);
 
   if (Shadow < 0.1)
     return vec4(Ka + Ke, 1.0);
@@ -23,6 +23,8 @@ vec4 Lighting( vec3 Position )
 
   if (Material == 3)
     Kd = vec3(0.0, 1.0, 0.0);
+
+    return Kd;
 
   Color += Ka;
 
