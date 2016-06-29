@@ -24,7 +24,7 @@ vec4 Lighting( vec3 Position )
   if (Material == 3)
     Kd = vec3(0.0, 1.0, 0.0);
 
-    return vec4(Kd, 1.0);
+    return vec4(Normal(Position), 1.0);
 
   Color += Ka;
 
