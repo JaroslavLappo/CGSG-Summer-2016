@@ -16,16 +16,17 @@ io.sockets.on('connection', function (socket) {
         'connected client sockid: ' +
         (socket.id).toString());
 
-    for (var i = 0; i < players.length; i++) {
-        socket.emit('add_user', players[i]);
-    }
-
     var player = {
         id: socket.id,
         name: 'default',
         pos: vec3.create()
     };
     players.push(player);
+
+    for (var i = 0; i < players.length; i++) {
+        if (players[i] != player)
+            socket.emit('add_user', players[i]);
+    }
 
     console.log('Start send new user to all/exs');
 
@@ -75,6 +76,14 @@ io.sockets.on('connection', function (socket) {
         socket.broadcast.emit('rem_user', {
             id: player.id
         });
+
+        var i = 0;
+
+        while (i < players.length && players[i].id != player.id)
+            i++;
+
+        players.splice(i, 1);
+
         console.log('disconnected sockid: ' +
             (socket.id).toString());
     });

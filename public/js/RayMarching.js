@@ -33,9 +33,19 @@ function NetworkInit(name) {
             lplayer = player;
     });
 
+    socket.on('rem_user', function (data) {
+        var i = 0;
+
+        while (i < players.length && players[i].id != data.id)
+            i++;
+
+        console.log('Player  deleted: ' + (players[i].id).toString());
+        players.splice(i, 1);
+    });
+
     socket.on('send_pos', function (data) {
         var i = 0;
-        while (players[i].id != data.id && i < players.length)
+        while (i < players.length && players[i].id != data.id)
             i++;
 
         vec3.copy(players[i].pos, data.pos);
@@ -45,7 +55,7 @@ function NetworkInit(name) {
 
     socket.on('send_name', function (data) {
         var i = 0;
-        while (players[i].id != data.id && i < players.length)
+        while (i < players.length && players[i].id != data.id)
             i++;
 
         players.name = data.name;
@@ -413,6 +423,7 @@ function controlsKeyboard(event) {
         CameraTranslate(speed, 0, 0);
     //console.log("Pressed: " + key);
 }
+
 
 function WebGLStart() {
     var canvas = document.getElementById("rm-canvas");
