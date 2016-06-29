@@ -12,9 +12,6 @@ javascript:(function () {
     document.head.appendChild(script);
 })();
 
-var _debug_pos = vec3.create();
-vec3.set(_debug_pos, 13, 3, 7);
-var _send_delta = 30;
 var players = [];
 var lplayer = {
     id: null,
@@ -68,7 +65,7 @@ function NetworkInit(name) {
 
     function PosSend(timeout) {
         lplayer.pos = Camera.Pos;
-        if (!vec3cmp(oldpos, lplayer.pos)) {
+        if (!vec3.exactEquals(oldpos, lplayer.pos)) {
             socket.emit('send_pos', lplayer.pos);
             vec3.copy(oldpos, lplayer.pos);
         }
@@ -76,14 +73,6 @@ function NetworkInit(name) {
     }
 
     PosSend(100);
-}
-
-function vec3cmp(a, b) {
-    if (a[0] == b[0])
-        if (a[1] == b[1])
-            if (a[2] == b[2])
-                return true;
-    return false;
 }
 
 var gl;
