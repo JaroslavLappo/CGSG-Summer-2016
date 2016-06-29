@@ -237,7 +237,8 @@ function InitShaders() {
     shaderProgram.CamViewUnifrom = gl.getUniformLocation(shaderProgram, "CamView");
     shaderProgram.ProjDistUnifrom = gl.getUniformLocation(shaderProgram, "ProjDist");
     shaderProgram.TimeUnifrom = gl.getUniformLocation(shaderProgram, "Time");
-    shaderProgram.LightPosUnifrom = gl.getUniformLocation(shaderProgram, "LightPos");
+    shaderProgram.LightPointUnifrom = new Array();
+    shaderProgram.LightPointUnifrom[0] = gl.getUniformLocation(shaderProgram, "LightPoint[0]");
     shaderProgram.TextureUnfirom = gl.getUniformLocation(shaderProgram, "Texture");
     shaderProgram.PlayersNumUniform = gl.getUniformLocation(shaderProgram, "PlayersNum");
     shaderProgram.PlayersPosUniform = new Array();
@@ -285,7 +286,7 @@ function SetMatrixUniforms() {
     gl.uniform3f(shaderProgram.CamViewUnifrom, CamDir[0], CamDir[1], CamDir[2]);
     gl.uniform1f(shaderProgram.ProjDistUnifrom, 1);
     gl.uniform1f(shaderProgram.TimeUnifrom, time);
-    gl.uniform3f(shaderProgram.LightPosUnifrom, 0.5 * TimeVec[1], 1 - TimeVec[2], 0.5 * TimeVec[0]);
+    gl.uniform3f(shaderProgram.LightPointUnifrom[0], 0.5 * TimeVec[1], 1 - TimeVec[2], 0.5 * TimeVec[0]);
     gl.uniform1i(shaderProgram.TextureUnfirom, 0);
     gl.uniform1i(shaderProgram.PlayersNumUniform, players.length - 1);
 

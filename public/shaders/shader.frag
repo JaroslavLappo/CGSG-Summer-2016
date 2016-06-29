@@ -16,12 +16,11 @@ uniform int Height;
 
 #include "primitives.frag"
 #include "operations.frag"
-
 #include "models.frag"
+#include "light-sources.frag"
 
 #define MAX_PLAYERS 10
 
-uniform vec3 LightPos;
 uniform int PlayersNum;
 uniform vec3 PlayersPos[MAX_PLAYERS];
 
@@ -35,25 +34,26 @@ vec2 SDF( vec3 Point )
       Players = opU(Players, vec2(sdSphere(Point - PlayersPos[i], 0.03), 3.0));
 
   vec2 Prism = vec2(sdHexPrism(RotateX(Point, 90.0 / 180.0 * Pi), vec2(0.1, 0.2)), 1.0);
-  float h = 0.0;
+/*  float h = 0.0;
   Prism = vec2( opS(
                		             sdTorus82(  Point-vec3(-0.0,h, 0.0), vec2(0.20,0.1)),
                	                 sdCylinder(  opRep( vec3(atan(Point.x+0.0,Point.z)/6.2831,
                											  Point.y,
                											  0.02+0.5*length(Point-vec3(0.0,h, 0.0))),
-               									     vec3(0.05,1.0,0.05)), vec2(0.02,0.6))), 51.0 );
+               									     vec3(0.05,1.0,0.05)), vec2(0.02,0.6))), 51.0 );*/
   vec2 Plane = vec2(sdPlane(Point, -0.1), 2.0);
-  vec2 LightSource = vec2(sdSphere(Point - LightPos, 0.03), -1.0);
+  vec2 LightSource = vec2(sdSphere(Point - LightPoint[0], 0.03), -1.0);
 
   return opU(opU(opU(Prism, Plane), LightSource), Players);
 }
 
 int GetMaterial( vec3 Point )
 {
-  return int(SDF(Point).y);
+  return int(SDF(Point).y) - 1;
 }
 
 #include "ray-marching.frag"
+#include "material.frag"
 #include "lighting.frag"
 
 void main( void )

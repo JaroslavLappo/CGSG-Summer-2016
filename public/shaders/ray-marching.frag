@@ -69,7 +69,7 @@ float IntersectShadow( vec3 Point, vec3 Light )
     return 0.0;
 }
 
-vec3 Normal( vec3 Point )
+vec3 GetNormal( vec3 Point )
 {
   float E = 0.00001;
 
