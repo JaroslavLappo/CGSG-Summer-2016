@@ -375,8 +375,6 @@ function InitPointerLock(canvas) {
     canvas.addEventListener('click', function () {
         if (!isLocked()) {
             canvas.requestPointerLock();
-        } else {
-            document.exitPointerLock();
         }
     }, false);
 
