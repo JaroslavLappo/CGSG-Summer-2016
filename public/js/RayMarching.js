@@ -20,6 +20,8 @@ var lplayer = {
 };
 var lplayer_num;
 var socket;
+var Acceleration = vec3.create();
+var OldAcceleration = vec3.create();
 
 function NetworkInit(name) {
     socket = io();
@@ -67,16 +69,16 @@ function NetworkInit(name) {
     });
 
 
-    function PosSend(timeout) {
-        lplayer.pos = Camera.Pos;
-        if (!vec3.exactEquals(oldpos, lplayer.pos)) {
-            socket.emit('send_pos', lplayer.pos);
-            vec3.copy(oldpos, lplayer.pos);
+    function AccelerationSend(timeout) {
+        if (!vec3.exactEquals(OldAcceleration, Acceleration)) {
+            console.log("send acceleration" + Acceleration);
+            socket.emit('send_acceleration', Acceleration);
+            vec3.copy(OldAcceleration, Acceleration);
         }
-        setTimeout(PosSend, timeout, timeout);
+        setTimeout(AccelerationSend, timeout, timeout);
     }
 
-    PosSend(100);
+    AccelerationSend(100);
 }
 
 var gl;
@@ -214,8 +216,6 @@ function GetShader(gl, FileName) {
 }
 
 var shaderProgram;
-var CamPos = vec3.create();
-var CamDir = vec3.create();
 
 function InitShaders() {
     var fragmentShader = GetShader(gl, "shaders/shader.frag");
@@ -266,24 +266,23 @@ function SetMatrixUniforms() {
     if (CameraMode == "Circle")
         vec3.set(TimeVec, Math.cos(time), Math.sin(time), (Math.sin(time / 2) + 1) / 2);
 
+    if (CameraMode != "Game") {
+        vec3.subtract(Camera.Dir, LookAt, Pos);
+        vec3.copy(Camera.Pos, Pos);
+    }
+
     Pos[0] = TimeVec[0] * 0.4;
     Pos[1] = TimeVec[2] * 0.6;
     Pos[2] = TimeVec[1] * 0.4;
 
-    vec3.subtract(CamDir, LookAt, Pos);
-
-    vec3.copy(CamPos, Pos);
-
     if (CameraMode == "Game") {
-        vec3.copy(CamDir, Camera.Dir);
-        vec3.copy(CamPos, Camera.Pos);
         vec3.set(TimeVec, Math.cos(time * 4 / 3), Math.sin(time * 4 / 5), (Math.sin(time * 4 / 2) + 1) / 2);
     }
 
-    vec3.normalize(CamDir, CamDir);
+    vec3.normalize(Camera.Dir, Camera.Dir);
 
-    gl.uniform3f(shaderProgram.CamPosUnifrom, CamPos[0], CamPos[1], CamPos[2]);
-    gl.uniform3f(shaderProgram.CamViewUnifrom, CamDir[0], CamDir[1], CamDir[2]);
+    gl.uniform3f(shaderProgram.CamPosUnifrom, Camera.Pos[0], Camera.Pos[1], Camera.Pos[2]);
+    gl.uniform3f(shaderProgram.CamViewUnifrom, Camera.Dir[0], Camera.Dir[1], Camera.Dir[2]);
     gl.uniform1f(shaderProgram.ProjDistUnifrom, 1);
     gl.uniform1f(shaderProgram.TimeUnifrom, time);
     gl.uniform3f(shaderProgram.LightPointUnifrom[0], 0.5 * TimeVec[1], 1 - TimeVec[2], 0.5 * TimeVec[0]);
@@ -418,13 +417,13 @@ function controlsKeyboard(event) {
     var speed = 0.1;
 
     if (key == 87)
-        CameraTranslate(0, 0, -speed);
+        vec3.set(Acceleration, 0, 0, -speed);
     if (key == 65)
-        CameraTranslate(-speed, 0, 0);
+        vec3.set(Acceleration, -speed, 0, 0);
     if (key == 83)
-        CameraTranslate(0, 0, speed);
+        vec3.set(Acceleration, 0, 0, speed);
     if (key == 68)
-        CameraTranslate(speed, 0, 0);
+        vec3.set(Acceleration, speed, 0, 0);
     //console.log("Pressed: " + key);
 }
 
