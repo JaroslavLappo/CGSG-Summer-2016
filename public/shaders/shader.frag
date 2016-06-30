@@ -43,8 +43,9 @@ vec2 SDF( vec3 Point )
                									     vec3(0.05,1.0,0.05)), vec2(0.02,0.6))), 51.0 );*/
   vec2 Plane = vec2(sdPlane(Point, -0.1), 2.0);
   vec2 LightSource = vec2(sdSphere(Point - LightPoint[0], 0.03), -1.0);
+  vec2 Box = vec2(-sdBox(Point, vec3(1, 2, 1)), 3.0);
 
-  return opU(opU(opU(Prism, Plane), LightSource), Players);
+  return opU(opU(opU(opU(Prism, Plane), LightSource), Players), Box);
 }
 
 int GetMaterial( vec3 Point )
