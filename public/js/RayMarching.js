@@ -52,15 +52,8 @@ function NetworkInit(name) {
             i++;
 
         vec3.copy(players[i].pos, data.pos);
-        if (players[i].id == null)
-            vec3.copy(Camera.Pos, data.pos);
-        if (players[i].id != null)
-          console.log('player id: ' + (players[i].id).toString() +
-              'pos: ' + vec3.str(players[i].pos));
-        else
-            console.log('player id: ' + 'null' +
-              'pos: ' + vec3.str(players[i].pos));
-
+        console.log('player id: ' + (players[i].id).toString() +
+            'pos: ' + vec3.str(players[i].pos));
     });
 
     socket.on('send_name', function (data) {
@@ -130,6 +123,23 @@ function CameraRotateY(angle) {
 }
 
 function CameraTranslate(x, y, z) {
+    var tr_vec = vec3.create();
+    var x_vec = vec3.create();
+    var y_vec = vec3.create();
+    var z_vec = vec3.create();
+
+    vec3.set(tr_vec, 0, 0, 0);
+
+    vec3.add(tr_vec, tr_vec,
+        vec3.scale(x_vec, Camera.Right, x));
+
+    vec3.add(tr_vec, tr_vec,
+        vec3.scale(y_vec, up_vec, y));
+
+    vec3.add(tr_vec, tr_vec,
+        vec3.scale(z_vec, Camera.Dir, -z));
+
+    vec3.add(Camera.Pos, Camera.Pos, tr_vec);
 }
 
 function InitGL(canvas) {
@@ -372,12 +382,10 @@ function InitPointerLock(canvas) {
         if (isLocked()) {
             document.addEventListener("mousemove", controlsMouse, false);
             document.addEventListener("keydown", controlsKeyboard, false);
-            document.addEventListener("keyup", controlsKeyboardUp, false);
             document.body.classList.add('locked');
         } else {
             document.removeEventListener("mousemove", controlsMouse, false);
             document.removeEventListener("keydown", controlsKeyboard, false);
-            document.removeEventListener("keyup", controlsKeyboardUp, false);
             document.body.classList.remove('locked');
         }
     };
@@ -407,22 +415,16 @@ function controlsKeyboard(event) {
     var speed = 0.1;
 
     if (key == 87)
-        vec3.multiply(Acceleration, Camera.Dir, vec3.fromValues(1, 1, 1));
+        vec3.set(Acceleration, 0, 0, -speed);
     if (key == 65)
-        vec3.multiply(Acceleration, Camera.Right, vec3.fromValues(-1, -1, -1));
+        vec3.set(Acceleration, -speed, 0, 0);
     if (key == 83)
-        vec3.multiply(Acceleration, Camera.Dir, vec3.fromValues(-1, -1, -1));
+        vec3.set(Acceleration, 0, 0, speed);
     if (key == 68)
-        vec3.multiply(Acceleration, Camera.Right, vec3.fromValues(1, 1, 1));
-
-    Acceleration[1] = 0;// Kostyl' V camere nado hranit' vector forward ne povorachivauschijsa vdol' y
-    vec3.normalize(Acceleration, Acceleration);
-    vec3.multiply(Acceleration, Acceleration, vec3.fromValues(speed, speed, speed));
+        vec3.set(Acceleration, speed, 0, 0);
+    //console.log("Pressed: " + key);
 }
 
-function controlsKeyboardUp(event) {
-    vec3.set(Acceleration, 0, 0, 0);
-}
 
 function WebGLStart() {
     var canvas = document.getElementById("rm-canvas");
