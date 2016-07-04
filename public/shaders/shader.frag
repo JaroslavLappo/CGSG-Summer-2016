@@ -30,10 +30,13 @@ vec2 SDF( vec3 Point )
   vec2 Players = vec2(1000.0, 0.0);
 
   for (int i = 0; i < MAX_PLAYERS; i++)
-    if (i < PlayersNum)
-      Players = opU(Players, vec2(sdSphere(Point - PlayersPos[i], 0.03), 3.0));
+  {
+    if (i >= PlayersNum)
+      break;
+    Players = opU(Players, vec2(sdSphere(Point - PlayersPos[i], 0.03), 3.0));
+  }
 
-  vec2 Prism = vec2(sdHexPrism(RotateX(Point, 90.0 / 180.0 * Pi), vec2(0.1, 0.2)), 1.0);
+  vec2 Prism = vec2(sdTexture(Point), 1.0);//vec2(sdHexPrism(RotateX(Point, 90.0 / 180.0 * Pi), vec2(0.1, 0.04)), 1.0);
 /*  float h = 0.0;
   Prism = vec2( opS(
                		             sdTorus82(  Point-vec3(-0.0,h, 0.0), vec2(0.20,0.1)),
@@ -66,9 +69,9 @@ void main( void )
   if (Distance > 0.0)
   {
     vec3 Position = Ray(CamPos, V, Distance);
-///*Intersection test*/    gl_FragColor = vec4(0, 1, 1, 1);
-///*Depth*/    gl_FragColor = vec4((1.0 - Distance / 2.0) * vec3(1.0, 1.0, 1.0), 1.0);
-///*Normal*/    gl_FragColor = vec4(Normal(Position), 1.0);
+///*Intersection test*/    Color = vec4(0, 1, 1, 1);
+///*Depth*/    Color = vec4((1.0 - Distance / 2.0) * vec3(1.0, 1.0, 1.0), 1.0);
+///*Normal*/    Color = vec4(GetNormal(Position), 1.0);
 /*Lighting*/    Color = Lighting(Position);
   }
   else

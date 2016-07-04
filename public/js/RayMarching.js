@@ -288,14 +288,15 @@ function SetMatrixUniforms() {
     gl.uniform1f(shaderProgram.TimeUnifrom, time);
     gl.uniform3f(shaderProgram.LightPointUnifrom[0], 0.5 * TimeVec[1], 1 - TimeVec[2], 0.5 * TimeVec[0]);
     gl.uniform1i(shaderProgram.TextureUnfirom, 0);
-    gl.uniform1i(shaderProgram.PlayersNumUniform, players.length - 1);
 
     for (var i = 0, j = 0; i < players.length; i++)
-      if (players[i].id != null) {
+      if (players[i].id != null && vec3.length(players[i].pos) > 0.1) {
         gl.uniform3f(shaderProgram.PlayersPosUniform[j], players[i].pos[0], players[i].pos[1], players[i].pos[2]);
         j++;
         //console.log("Other player(" + i + ")(my players is " + lplayer_num + ") is on coordinates: " + players[i].pos[0] + " " + players[i].pos[1] + " " +  players[i].pos[2]);
       }
+
+    gl.uniform1i(shaderProgram.PlayersNumUniform, j);
 }
 
 var squareVertexPositionBuffer;
@@ -315,7 +316,7 @@ function InitBuffers() {
 }
 
 function LoadSDF(Model) {
-  var Width = 8, Height = 8, Depth = 8;
+  var Width = 256, Height = 256, Depth = 256;
 //  var Width = 16, Height = 32, Depth = 128;
   var Image = gl.createTexture();
 
@@ -327,15 +328,20 @@ function LoadSDF(Model) {
   for (var i = 0; i < Depth; i++) {
     for (var j = 0; j < Height; j++) {
       for (var k = 0; k < Width; k++) {
-        var x = i - 4;
-        var y = j - 4;
-        var z = k - 4;
-        data[i * Height * Width + j * Width + k] = Math.sqrt(x * x + y * y + z * z) - 2.5;
+        var x = 2 * i / Depth - 1;
+        var y = 2 * j / Height - 1;
+        var z = 2 * k / Width - 1;
+        data[i * Height * Width + j * Width + k] = Math.sqrt(x * x + y * y + z * z) - 0.1;
       }
     }
   }
 
   gl.texSubImage3D(gl.TEXTURE_3D, 0, 0, 0, 0, Width, Height, Depth, gl.RED, gl.FLOAT, new Float32Array(data));
+
+  gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_BASE_LEVEL, 0);
+  gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAX_LEVEL, 0);
+  gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
   gl.bindTexture(gl.TEXTURE_3D, null);
   return Image;
@@ -344,7 +350,7 @@ function LoadSDF(Model) {
 var Sphere;
 
 function InitTextures() {
-//  alert("Maximal 3d texture size is " + gl.getParameter(gl.MAX_3D_TEXTURE_SIZE));
+  //alert("Maximal 3d texture size is " + gl.getParameter(gl.MAX_3D_TEXTURE_SIZE));
   Sphere = LoadSDF(null);
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_3D, Sphere);
