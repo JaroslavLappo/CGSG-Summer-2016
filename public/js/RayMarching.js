@@ -413,20 +413,6 @@ function controlsKeyboard(event) {
     var speed = 0.1;
 
     if (key == 87)
-<<<<<<< HEAD
-<<<<<<< HEAD
-        CameraTranslate(0, 0, -speed);
-=======
-        vec3.set(Acceleration, 0, 0, -speed);
->>>>>>> parent of ab1476b... Revert "Modifed physics of moving."
-    if (key == 65)
-        vec3.set(Acceleration, -speed, 0, 0);
-    if (key == 83)
-        vec3.set(Acceleration, 0, 0, speed);
-    if (key == 68)
-        vec3.set(Acceleration, speed, 0, 0);
-    //console.log("Pressed: " + key);
-=======
         vec3.multiply(Acceleration, Camera.Dir, vec3.fromValues(1, 1, 1));
     if (key == 65)
         vec3.multiply(Acceleration, Camera.Right, vec3.fromValues(-1, -1, -1));
@@ -438,7 +424,6 @@ function controlsKeyboard(event) {
     Acceleration[1] = 0;// Kostyl' V camere nado hranit' vector forward ne povorachivauschijsa vdol' y
     vec3.normalize(Acceleration, Acceleration);
     vec3.multiply(Acceleration, Acceleration, vec3.fromValues(speed, speed, speed));
->>>>>>> parent of 041a6c8... Revert "Movement completed (without acceleration)"
 }
 
 function controlsKeyboardUp(event) {
